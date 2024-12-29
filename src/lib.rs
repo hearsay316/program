@@ -8,37 +8,37 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Define the type of state stored in accounts
+/// 定义存储在账户中的状态类型
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct GreetingAccount {
-    /// number of greetings
+    /// 问候次数
     pub counter: u32,
 }
 
-// Declare and export the program's entrypoint
+// 声明并导出程序的入口点
 entrypoint!(process_instruction);
 
-// Program entrypoint's implementation
+/// 程序入口点的实现
 pub fn process_instruction(
-    program_id: &Pubkey, // Public key of the account the hello world program was loaded into
-    accounts: &[AccountInfo], // The account to say hello to
-    _instruction_data: &[u8], // Ignored, all helloworld instructions are hellos
+    program_id: &Pubkey, // 加载 Hello World 程序的账户的公钥
+    accounts: &[AccountInfo], // 要问候的账户
+    _instruction_data: &[u8], // 被忽略,所有 helloworld 指令都是问候
 ) -> ProgramResult {
     msg!("Hello World Rust program entrypoint");
 
-    // Iterating accounts is safer than indexing
+    // 迭代账户比直接索引更安全
     let accounts_iter = &mut accounts.iter();
 
-    // Get the account to say hello to
+    // 获取要问候的账户
     let account = next_account_info(accounts_iter)?;
 
-    // The account must be owned by the program in order to modify its data
+    // 账户必须由程序拥有才能修改其数据
     if account.owner != program_id {
         msg!("Greeted account does not have the correct program id");
         return Err(ProgramError::IncorrectProgramId);
     }
 
-    // Increment and store the number of times the account has been greeted
+    // 增加并存储账户被问候的次数
     let mut greeting_account = GreetingAccount::try_from_slice(&account.data.borrow())?;
     greeting_account.counter += 1;
     greeting_account.serialize(&mut *account.data.borrow_mut())?;
